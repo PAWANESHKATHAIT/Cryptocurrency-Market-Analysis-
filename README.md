@@ -49,5 +49,4 @@ The **Excel file (`CryptoData.xlsx`)** will be automatically updated every 5 min
 ---
 📌 **Author:** Pawanesh Kumar  
 📅 **Date:** March 2025  
-📧 **Email:** [Your Email]  
-🌐 **LinkedIn:** [Your LinkedIn]  
+
