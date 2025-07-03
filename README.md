@@ -1,4 +1,4 @@
-Cryptocurrency Market Analytics Project
+## Cryptocurrency Market Analytics Project
 
 This project establishes a robust data pipeline for extracting, transforming, loading, and analyzing real-time cryptocurrency market data, culminating in an interactive Power BI dashboard. This README provides an overview of the project's goals, architecture, and key components developed during the Local Development Phase.
 
