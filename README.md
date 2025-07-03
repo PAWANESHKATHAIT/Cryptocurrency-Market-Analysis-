@@ -5,9 +5,7 @@ This project automates the extraction, transformation, loading, and analysis of 
 
 2. Architecture Overview
 The project follows a classic ETL (Extract, Transform, Load) pattern, orchestrated by Python scripts.
-
-graph LR
-    A[CoinGecko API] --> B{Python ETL Scripts};
+    A -- [CoinGecko API] --> B{Python ETL Scripts};
     B -- Fetch & Transform --> C[Local MySQL Database];
     C -- Store Raw Data --> D[crypto_prices Table];
     D -- Read & Segment --> B2{Python Segmentation Script};
