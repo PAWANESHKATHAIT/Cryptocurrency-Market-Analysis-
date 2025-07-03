@@ -6,7 +6,7 @@ This project automates the extraction, transformation, loading, and analysis of 
 
 ## 2. Architecture Overview
 
-The project follows a classic ETL (Extract, Transform, Load) pattern, orchestrated by Python scripts.
+The project follows a classic ETL (Extract, Transform, Load) pattern, orchestrated by Python scripts. For a detailed visual representation of the system architecture, refer to the `architecture.pdf` file in this repository.
 
 ```
 CoinGecko API → Python ETL Scripts → Local MySQL Database → crypto_prices Table
@@ -16,7 +16,12 @@ CoinGecko API → Python ETL Scripts → Local MySQL Database → crypto_prices 
                 Update Table → Power BI Desktop → Interactive Dashboard
 ```
 
-*(Note: A detailed draw.io architecture diagram can be provided separately.)*
+**Key Components:**
+- **Data Source**: CoinGecko API for real-time cryptocurrency data
+- **ETL Engine**: Python scripts for data processing and transformation
+- **Database**: MySQL for structured data storage
+- **Analytics**: Power BI for visualization and business intelligence
+- **Orchestration**: Automated pipeline management
 
 ## 3. Features
 
@@ -45,13 +50,20 @@ Follow these steps to set up the project on your local machine.
 
 1. **Start MySQL Server**: Ensure your MySQL server is running.
 
-2. **Create Database**: Open MySQL Workbench, connect to your MySQL server, and execute the following SQL query to create the database:
+2. **Initialize Database**: You can use the provided `db_init.sql` file to set up your database schema quickly:
+   ```bash
+   mysql -u root -p < db_init.sql
+   ```
+   
+   **Or manually execute the following steps:**
+
+3. **Create Database**: Open MySQL Workbench, connect to your MySQL server, and execute the following SQL query to create the database:
    ```sql
    CREATE DATABASE IF NOT EXISTS crypto_db;
    USE crypto_db;
    ```
 
-3. **Create crypto_prices Table**: Execute the following SQL query to create the crypto_prices table. This table includes a composite primary key (timestamp, coin_id) to handle unique entries and enable updates.
+4. **Create crypto_prices Table**: Execute the following SQL query to create the crypto_prices table. This table includes a composite primary key (timestamp, coin_id) to handle unique entries and enable updates.
    ```sql
    CREATE TABLE IF NOT EXISTS crypto_prices (
        timestamp DATETIME NOT NULL,
@@ -76,7 +88,7 @@ Follow these steps to set up the project on your local machine.
    );
    ```
 
-4. **Add market_cap_tier Column**: Add the segmentation column to your crypto_prices table.
+5. **Add market_cap_tier Column**: Add the segmentation column to your crypto_prices table.
    ```sql
    ALTER TABLE crypto_prices
    ADD COLUMN market_cap_tier VARCHAR(255);
@@ -105,12 +117,11 @@ Follow these steps to set up the project on your local machine.
    ```
 
 5. **Place Python Scripts**:
-   Ensure the following Python files are in your project directory:
-   - `etl_crypto.py`
-   - `segment_and_load.py`
-   - `pipeline_orchestrator.py`
-   
-   *(Make sure the content of these files matches the latest versions provided in our conversation, especially with the refactored functions and the MYSQL_CONFIG details.)*
+   The following Python files are already included in this repository:
+   - `etl_crypto.py` - Main ETL script for data extraction and loading
+   - `segment_and_load.py` - Market cap segmentation script  
+   - `pipeline_orchestrator.py` - Main orchestrator script
+   - `db_init.sql` - Database initialization script
 
 6. **Important MYSQL_CONFIG**:
    Verify that the `MYSQL_CONFIG` dictionary in `etl_crypto.py` and `segment_and_load.py` matches your MySQL setup:
@@ -203,11 +214,22 @@ Follow these steps to set up the project on your local machine.
 
 ## 7. Usage
 
+### Running the Pipeline
+
 To update the data in your Power BI dashboard:
 
-1. Ensure your MySQL server is running.
-2. Run the Python orchestrator script: `python pipeline_orchestrator.py`
-3. In Power BI Desktop, click the Refresh button (in the Home tab) to pull the latest data from your MySQL database.
+1. **Ensure MySQL is running**: Confirm your MySQL server is active.
+2. **Run the pipeline**: Execute the orchestrator script:
+   ```bash
+   python pipeline_orchestrator.py
+   ```
+3. **Refresh Power BI**: In Power BI Desktop, click the Refresh button (in the Home tab) to pull the latest data.
+
+### Viewing Results
+
+- **Power BI Dashboard**: Open the `Crypto_Market_Analysis_Dashboard.pdf` to see the expected dashboard output
+- **Architecture Overview**: Review `architecture.pdf` for system design details
+- **Database Verification**: Check your MySQL database for updated records
 
 ## 8. Future Enhancements (Cloud Deployment)
 
@@ -233,11 +255,15 @@ This project is designed with future scalability in mind. The next phase involve
 
 ```
 CryptoMarketAnalytics/
-├── venv/                          # Virtual environment
-├── etl_crypto.py                  # Main ETL script for data extraction and loading
-├── segment_and_load.py            # Market cap segmentation script
-├── pipeline_orchestrator.py       # Main orchestrator script
-├── README.md                      # This file
+├── venv/                              # Virtual environment (local)
+├── etl_crypto.py                      # Main ETL script for data extraction and loading
+├── segment_and_load.py                # Market cap segmentation script
+├── pipeline_orchestrator.py           # Main orchestrator script
+├── db_init.sql                        # Database initialization script
+├── README.md                          # Project documentation
+├── architecture.pdf                   # System architecture diagram
+├── Crypto_Market_Analysis_Dashboard.pdf  # Power BI dashboard export
+└── requirements.txt                   # Python dependencies (create as needed)
 ```
 
 ## 11. Troubleshooting
@@ -253,12 +279,39 @@ CryptoMarketAnalytics/
 
 For technical issues or questions, please create an issue in the project repository.
 
-## 12. License
+## 12. Quick Start Guide
+
+For a rapid setup, follow these essential steps:
+
+1. **Prerequisites**: Install Python 3.8+, MySQL Server, and Power BI Desktop
+2. **Database Setup**: Run `mysql -u root -p < db_init.sql` to initialize the database
+3. **Python Environment**: 
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+   pip install requests mysql-connector-python pandas sqlalchemy tabulate
+   ```
+4. **Configure Database**: Update MySQL credentials in the Python scripts
+5. **Run Pipeline**: Execute `python pipeline_orchestrator.py`
+6. **View Results**: Connect Power BI to your MySQL database and create visualizations
+
+## 13. Repository Files
+
+- **`etl_crypto.py`**: Core ETL functionality for data extraction and loading
+- **`segment_and_load.py`**: Market capitalization segmentation logic
+- **`pipeline_orchestrator.py`**: Main execution script that coordinates the entire pipeline
+- **`db_init.sql`**: Database schema initialization script
+- **`README.md`**: Comprehensive project documentation
+- **`architecture.pdf`**: Visual system architecture diagram
+- **`Crypto_Market_Analysis_Dashboard.pdf`**: Sample Power BI dashboard output
+
+## 14. License
 
 This project is open-sourced under the MIT License. See the LICENSE file for more details.
 
 ---
 
-**Author**: [Your Name]  
-**Last Updated**: [Current Date]  
-**Version**: 1.0.0
+**Author**: PAWANESHKATHAIT  
+**Last Updated**: July 2025  
+**Version**: 1.0.0  
+**Repository**: Cryptocurrency Market Analytics Project
