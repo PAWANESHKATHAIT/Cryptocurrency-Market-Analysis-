@@ -238,7 +238,6 @@ CryptoMarketAnalytics/
 ├── segment_and_load.py            # Market cap segmentation script
 ├── pipeline_orchestrator.py       # Main orchestrator script
 ├── README.md                      # This file
-└── requirements.txt               # Python dependencies
 ```
 
 ## 11. Troubleshooting
