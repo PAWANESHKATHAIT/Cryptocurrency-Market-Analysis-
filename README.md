@@ -1,105 +1,267 @@
-## Cryptocurrency Market Analytics Project
+Cryptocurrency Market Analytics Project
 
-This project establishes a robust data pipeline for extracting, transforming, loading, and analyzing real-time cryptocurrency market data, culminating in an interactive Power BI dashboard. This README provides an overview of the project's goals, architecture, and key components developed during the Local Development Phase.
+1. Introduction
+This project automates the extraction, transformation, loading, and analysis of real-time cryptocurrency market data. It establishes a robust data pipeline that fetches data from a public API, stores it in a structured local MySQL database, enriches it with analytical segments, and visualizes key insights through an interactive Power BI dashboard. This README focuses on the Local Development Phase of the project.
 
-Project Goal
+2. Architecture Overview
+The project follows a classic ETL (Extract, Transform, Load) pattern, orchestrated by Python scripts.
 
-The primary objective is to deliver up-to-date insights into the cryptocurrency market. This is achieved by systematically collecting data from a public API, storing it in a structured local database, enriching it with analytical segments, and presenting these insights through a dynamic visualization dashboard.
+graph LR
+    A[CoinGecko API] --> B{Python ETL Scripts};
+    B -- Fetch & Transform --> C[Local MySQL Database];
+    C -- Store Raw Data --> D[crypto_prices Table];
+    D -- Read & Segment --> B2{Python Segmentation Script};
+    B2 -- Update --> D;
+    D -- Connect --> E[Power BI Desktop];
+    E -- Visualize --> F[Interactive Dashboard];
 
-Architecture and Components (Local Development Phase)
+(Note: A detailed draw.io architecture diagram can be provided separately.)
 
-The project is built around a classic ETL (Extract, Transform, Load) pipeline, orchestrated by Python scripts and leveraging a local MySQL database for data storage and Power BI for visualization.
+3. Features
+Automated Data Extraction: Fetches real-time cryptocurrency market data from the CoinGecko API.
 
-1. Data Source
+Data Transformation: Cleans and structures raw API data into a database-friendly format.
 
-CoinGecko API
+Incremental Loading: Efficiently inserts new records or updates existing ones in the database based on unique identifiers (timestamp, coin_id).
 
-Serves as the external source for raw, real-time cryptocurrency market data, including current prices, market capitalization, trading volumes, and 24-hour changes.
+Market Cap Segmentation: Automatically categorizes cryptocurrencies into tiers (e.g., Large Cap, Mid Cap, Small Cap, Micro/Nano Cap) for enhanced analysis.
 
-2. ETL Pipeline (Python Scripts)
+Orchestrated Pipeline: Ensures sequential and consistent execution of data loading and segmentation processes.
 
-The data pipeline is managed by a set of interconnected Python scripts:
+Interactive Dashboard: Provides a Power BI dashboard for visualizing key market trends, performance metrics, and segmented insights.
 
-etl_crypto.py (Extract & Initial Load)
+4. Prerequisites
+Before you begin, ensure you have the following installed:
 
-Functionality: Connects to the CoinGecko API, fetches market data for a specified number of cryptocurrencies, transforms the raw JSON response into a structured format, and loads it into the local MySQL database.
+Python 3.8+: Download Python
 
-Key Feature: Utilizes ON DUPLICATE KEY UPDATE logic in MySQL to efficiently handle existing records (based on timestamp and coin_id), ensuring data freshness without creating duplicate entries.
+MySQL Server: [suspicious link removed]
 
-segment_and_load.py (Data Segmentation & Update)
+MySQL Workbench: Download MySQL Workbench (Recommended for database management)
 
-Functionality: Reads the crypto_prices data from the MySQL database and performs a crucial analytical transformation. It calculates a market_cap_tier (e.g., 'Large Cap', 'Mid Cap', 'Small Cap', 'Micro/Nano Cap') for each cryptocurrency based on its market capitalization.
+Power BI Desktop: Download Power BI Desktop
 
-Key Feature: Updates the existing crypto_prices table by populating the market_cap_tier column, ensuring all relevant data, including analytical segments, resides in a single, unified table.
+MySQL Connector/NET: (Required for Power BI to connect to MySQL) Download Connector/NET - Ensure you install the version compatible with your Power BI Desktop installation (usually the latest GA version).
 
-pipeline_orchestrator.py (Pipeline Orchestration)
+5. Setup and Installation
+Follow these steps to set up the project on your local machine.
 
-Functionality: Acts as the master control script for the entire data pipeline. It ensures sequential execution by first calling etl_crypto.py to load the latest data, and then, immediately afterward, calls segment_and_load.py to apply the segmentation.
+5.1. MySQL Database Setup
+Start MySQL Server: Ensure your MySQL server is running.
 
-Purpose: Guarantees data consistency and reliability by ensuring that segmentation is performed only after the most recent data has been successfully loaded, preventing incomplete or outdated analysis.
+Create Database: Open MySQL Workbench, connect to your MySQL server, and execute the following SQL query to create the database:
 
-3. Local Database
+CREATE DATABASE IF NOT EXISTS crypto_db;
+USE crypto_db;
 
-MySQL (crypto_db):
+Create crypto_prices Table: Execute the following SQL query to create the crypto_prices table. This table includes a composite primary key (timestamp, coin_id) to handle unique entries and enable updates.
 
-A dedicated MySQL database hosts the crypto_prices table.
+CREATE TABLE IF NOT EXISTS crypto_prices (
+    timestamp DATETIME NOT NULL,
+    coin_id VARCHAR(255) NOT NULL,
+    symbol VARCHAR(50),
+    name VARCHAR(255),
+    current_price DECIMAL(20, 8),
+    market_cap BIGINT,
+    total_volume BIGINT,
+    high_24h DECIMAL(20, 8),
+    low_24h DECIMAL(20, 8),
+    price_change_24h DECIMAL(20, 8),
+    price_change_percentage_24h DECIMAL(20, 8),
+    market_cap_change_24h BIGINT,
+    market_cap_change_percentage_24h DECIMAL(20, 8),
+    circulating_supply DECIMAL(30, 8),
+    total_supply DECIMAL(30, 8),
+    max_supply DECIMAL(30, 8),
+    ath DECIMAL(20, 8),
+    atl DECIMAL(20, 8),
+    PRIMARY KEY (timestamp, coin_id)
+);
 
-crypto_prices Table:
+Add market_cap_tier Column: Add the segmentation column to your crypto_prices table.
 
-This table is the central repository for all extracted, transformed, and segmented cryptocurrency data. It was initially set up manually and is continuously updated by the Python pipeline. The market_cap_tier column has been successfully integrated into this table.
+ALTER TABLE crypto_prices
+ADD COLUMN market_cap_tier VARCHAR(255);
 
-Role: Provides a structured and accessible storage layer for all analytical data.
+(Optional: To verify, run DESCRIBE crypto_prices;)
 
-4. Visualization
+5.2. Python Environment Setup
+Clone the Repository (or create project folder):
+Create a project directory, e.g., CryptoMarketAnalytics.
 
-Power BI Dashboard:
+Create a Virtual Environment:
+Navigate to your project directory in the terminal and run:
 
-An interactive dashboard built using Power BI Desktop, directly connected to the local MySQL crypto_db and the crypto_prices table.
+python -m venv venv
 
-Dashboard Title: "Cryptocurrency Market Analytics Dashboard"
+Activate the Virtual Environment:
 
-Key Visualizations:
+Windows: .\venv\Scripts\activate
 
-Overall Market KPIs: Card visuals displaying high-level metrics (Total Market Capitalization, Total 24h Trading Volume, Average 24h Price Change %).
+macOS/Linux: source venv/bin/activate
 
-Market Cap Tier Performance: Bar charts illustrating Average 24h Price Change and Average 24h Price Range by market_cap_tier segments.
+Install Dependencies:
+Install the necessary Python libraries:
 
-Market Dominance: A Donut Chart showing the distribution of Total Market Capitalization across market_cap_tier segments.
+pip install requests mysql-connector-python pandas sqlalchemy tabulate
 
-Top/Bottom Performers: Table visuals with conditional formatting identifying the Top 5 Gainers, Top 5 Losers by 24h price change, and the Top 10 Cryptocurrencies by 24h Trading Volume.
+Place Python Scripts:
+Ensure the following Python files are in your project directory:
 
-Current Status:
+etl_crypto.py
 
-The dashboard is fully functional and provides insightful analysis based on current snapshot data. Historical trend analysis visuals will become fully effective as more data is accumulated over time through repeated pipeline runs.
+segment_and_load.py
 
-Key Learnings and Skills Demonstrated
+pipeline_orchestrator.py
 
-This project showcases practical experience and proficiency in:
+(Make sure the content of these files matches the latest versions provided in our conversation, especially with the refactored functions and the MYSQL_CONFIG details.)
 
-API Integration: Interacting with external web APIs for data extraction.
+Important MYSQL_CONFIG:
+Verify that the MYSQL_CONFIG dictionary in etl_crypto.py and segment_and_load.py matches your MySQL setup:
 
-Python for Data Engineering: Developing scripts for ETL processes, including data cleaning, transformation, and database interaction.
+MYSQL_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'Kathait@1122', # Your MySQL root password
+    'database': 'crypto_db'
+}
 
-Database Management (MySQL): Database setup, table creation, data manipulation (inserting, updating), and schema modification.
+5.3. Running the Data Pipeline
+Ensure MySQL is Running: Confirm your MySQL server is active.
 
-Data Transformation & Enhancement: Implementing business logic to create new, analytically valuable features (e.g., market cap segmentation).
+Activate Virtual Environment: If not already active, activate your Python virtual environment.
 
-Data Orchestration: Designing and implementing a sequential workflow for interdependent data processes.
+Execute the Orchestrator: Run the main pipeline orchestrator script:
 
-Business Intelligence (Power BI): Connecting to data sources, building diverse interactive visualizations, creating custom DAX measures, and applying conditional formatting for enhanced insights.
+python pipeline_orchestrator.py
 
-Troubleshooting: Systematically identifying and resolving technical issues encountered during pipeline development.
+This script will:
 
-Next Steps (Future Work)
+Fetch the latest cryptocurrency data from CoinGecko.
 
-The project is designed for future scalability and automation. The next phase involves Cloud Deployment to AWS, specifically:
+Load/update this data into your crypto_prices table.
 
-Migrating the MySQL database to AWS RDS.
+Calculate and update the market_cap_tier for all records in the crypto_prices table.
 
-Deploying the Python pipeline scripts to AWS Lambda.
+(Run this script multiple times over a period (e.g., hourly or daily) to accumulate historical data for trend analysis in Power BI.)
 
-Automating the pipeline execution using AWS EventBridge.
+6. Power BI Dashboard Setup
+Install MySQL Connector/NET: Ensure you have the correct version of MySQL Connector/NET installed for Power BI to connect to your MySQL database.
 
-Implementing secure credential management via AWS Secrets Manager.
+Open Power BI Desktop.
 
-Updating the Power BI dashboard to connect to the cloud-hosted AWS RDS database.
+Get Data:
+
+Go to Home tab -> Get Data -> More...
+
+Search for "MySQL database" and click Connect.
+
+Enter Server: localhost, Database: crypto_db.
+
+Select Data Connectivity mode: DirectQuery (or Import if preferred for smaller datasets/faster initial load). Click OK.
+
+Enter your MySQL Username: root and Password: Kathait@1122 under the "Database" tab. Click Connect.
+
+Load Table:
+
+In the Navigator window, expand crypto_db and select the crypto_prices table.
+
+Click Load.
+
+Data Cleaning (Power Query Editor):
+
+Go to Home tab -> Transform data to open Power Query Editor.
+
+Select crypto_db crypto_prices table.
+
+For numerical columns (current_price, market_cap, total_volume, high_24h, low_24h, etc.), check for and replace empty values with 0 (or another suitable imputation strategy) using Transform -> Replace Values.
+
+Ensure data types are correct (e.g., Decimal Number for prices, Whole Number for volumes/market caps).
+
+Click Home -> Close & Apply.
+
+Create DAX Measures:
+
+Daily Price Range Measure:
+
+Right-click on crypto_db crypto_prices table in "Fields" pane -> New measure.
+
+Formula: Daily Price Range = AVERAGEX('crypto_db crypto_prices', 'crypto_db crypto_prices'[high_24h] - 'crypto_db crypto_prices'[low_24h])
+
+Market Cap Tier Order Column (for logical sorting):
+
+Go to Data view -> Select crypto_db crypto_prices table -> New column.
+
+Formula:
+
+Market Cap Tier Order =
+SWITCH(
+    'crypto_db crypto_prices'[market_cap_tier],
+    "Large Cap (> $100B)", 1,
+    "Mid Cap ($1B - $100B)", 2,
+    "Small Cap ($100M - $1B)", 3,
+    "Micro/Nano Cap (< $100M)", 4,
+    BLANK()
+)
+
+Select the market_cap_tier column in Data view -> Column tools -> Sort by column -> choose Market Cap Tier Order.
+
+Build Visualizations:
+
+Create the dashboard with the title "Cryptocurrency Market Analytics Dashboard".
+
+Implement the following visuals as discussed, mapping fields to axes/values and applying formatting:
+
+Overall Market KPIs (Card visuals)
+
+Average 24h Price Change by Market Cap Tier (Bar/Column Chart)
+
+Total Market Capitalization Distribution by Tier (Donut Chart)
+
+Top 5 Gainers/Losers (Table visuals with conditional formatting)
+
+Top 10 Cryptocurrencies by 24h Trading Volume (Bar Chart)
+
+Average 24h Price Range by Market Cap Tier (Bar Chart)
+
+(Optional: Individual Coin Price Trend - requires historical data accumulation)
+
+7. Usage
+To update the data in your Power BI dashboard:
+
+Ensure your MySQL server is running.
+
+Run the Python orchestrator script: python pipeline_orchestrator.py
+
+In Power BI Desktop, click the Refresh button (in the Home tab) to pull the latest data from your MySQL database.
+
+8. Future Enhancements (Cloud Deployment)
+This project is designed with future scalability in mind. The next phase involves deploying the pipeline to AWS for automation and robustness:
+
+AWS RDS: Migrate the local MySQL database to a managed AWS RDS MySQL instance.
+
+AWS Lambda: Deploy the Python pipeline scripts as serverless functions.
+
+AWS EventBridge: Schedule Lambda functions to run automatically at regular intervals.
+
+AWS Secrets Manager: Securely manage database credentials.
+
+Power BI Cloud Connection: Update the Power BI dashboard to connect to the AWS RDS instance.
+
+9. Key Skills Demonstrated
+Data Engineering: ETL pipeline development, data orchestration, incremental loading.
+
+Python Programming: API integration, data manipulation with Pandas, database interaction (mysql-connector-python, SQLAlchemy).
+
+Database Management: MySQL schema design, DDL/DML operations, basic administration.
+
+Data Modeling & Transformation: Creating derived metrics and analytical segments (e.g., market_cap_tier).
+
+Business Intelligence: Power BI dashboard design, visualization best practices, DAX formula creation, data connectivity.
+
+Cloud Concepts (Future): Understanding of serverless computing (Lambda), managed databases (RDS), and cloud security.
+
+Troubleshooting & Problem Solving: Identifying and resolving technical issues across the stack.
+
+10. License
+This project is open-sourced under the MIT License. See the LICENSE file for more details.
